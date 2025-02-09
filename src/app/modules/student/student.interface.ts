@@ -1,3 +1,8 @@
+export type UserName = {
+  firstName: string;
+  middleName: string;
+  lastName: string;
+};
 export type Guardian = {
   fatherName: string;
   fatherOccupation: string;
@@ -7,11 +12,6 @@ export type Guardian = {
   motherContactName: string;
 };
 
-export type UserName = {
-  firstName: string;
-  middleName: string;
-  lastName: string;
-};
 export type LocalGaurdian = {
   name: string;
   occupation: string;
@@ -33,5 +33,5 @@ export type Student = {
   guardian: Guardian;
   localGaurdian: LocalGaurdian;
   profileImg?: string;
-  isActive: 'active' | 'inactive';
+  isActive: 'active' | 'blocked';
 };
