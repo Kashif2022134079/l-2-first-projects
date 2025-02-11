@@ -6,10 +6,10 @@ export type UserName = {
 export type Guardian = {
   fatherName: string;
   fatherOccupation: string;
-  fatherContactName: string;
+  fatherContactNo: string;
   motherName: string;
   motherOccupation: string;
-  motherContactName: string;
+  motherContactNo: string;
 };
 
 export type LocalGaurdian = {
