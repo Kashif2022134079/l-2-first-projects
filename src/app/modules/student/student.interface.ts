@@ -1,9 +1,11 @@
-export type UserName = {
+import { Model } from 'mongoose';
+
+export type TUserName = {
   firstName: string;
-  middleName: string;
+  middleName?: string;
   lastName: string;
 };
-export type Guardian = {
+export type TGuardian = {
   fatherName: string;
   fatherOccupation: string;
   fatherContactNo: string;
@@ -12,26 +14,37 @@ export type Guardian = {
   motherContactNo: string;
 };
 
-export type LocalGaurdian = {
+export type TLocalGaurdian = {
   name: string;
   occupation: string;
   contactNo: string;
   address: string;
 };
 
-export type Student = {
+export type TStudent = {
   id: string;
-  name: UserName;
+  password: string;
+  name: TUserName;
   gender: 'male' | 'female';
-  dateOfBirth: string;
+  dateOfBirth?: string;
   email: string;
   contactNo: string;
   emergencyContactNo: string;
-  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'o+' | 'o-' | 'AB+' | 'AB-';
+  bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'O+' | 'O-' | 'AB+' | 'AB-';
   presentAddress: string;
   permanentAddress: string;
-  guardian: Guardian;
-  localGaurdian: LocalGaurdian;
+  guardian: TGuardian;
+  localGaurdian: TLocalGaurdian;
   profileImg?: string;
   isActive: 'active' | 'blocked';
+  isDeleted?: boolean;
 };
+
+export type StudentMethods = {
+  isUserExists(id: string): Promise<TStudent | null>;
+};
+export type StudentModel = Model<
+  TStudent,
+  Record<string, never>,
+  StudentMethods
+>;

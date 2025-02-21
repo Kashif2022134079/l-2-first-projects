@@ -1,16 +1,24 @@
 import { Schema, model } from 'mongoose';
 import {
-  Guardian,
-  LocalGaurdian,
-  Student,
-  UserName,
+  TGuardian,
+  TLocalGaurdian,
+  TStudent,
+  StudentMethods,
+  StudentModel,
+  TUserName,
 } from './student/student.interface';
+import bcrypt from 'bcrypt';
+import config from '../config';
 
-const userNameSchema = new Schema<UserName>({
+const userNameSchema = new Schema<TUserName>({
   firstName: {
     type: String,
     trim: true,
     required: [true, 'First Name is required'],
+    validate: function (value: string) {
+      const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1);
+      return firstNameStr === value;
+    },
   },
   middleName: {
     type: String,
@@ -23,7 +31,7 @@ const userNameSchema = new Schema<UserName>({
   },
 });
 
-const guardianSchema = new Schema<Guardian>({
+const guardianSchema = new Schema<TGuardian>({
   fatherName: {
     type: String,
     trim: true,
@@ -54,7 +62,7 @@ const guardianSchema = new Schema<Guardian>({
   },
 });
 
-const localGaurdianSchema = new Schema<LocalGaurdian>({
+const localGaurdianSchema = new Schema<TLocalGaurdian>({
   name: {
     type: String,
     trim: true,
@@ -75,8 +83,12 @@ const localGaurdianSchema = new Schema<LocalGaurdian>({
   },
 });
 
-const studentSchema = new Schema<Student>({
+const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
   id: { type: String, required: true, unique: true },
+  password: {
+    type: String,
+    required: [true, 'Password is needed'],
+  },
   name: {
     type: userNameSchema,
     required: [true, 'Name is required'],
@@ -130,6 +142,41 @@ const studentSchema = new Schema<Student>({
     enum: ['active', 'blocked'],
     default: 'active',
   },
+  isDeleted: {
+    type: Boolean,
+    default: 'false',
+  },
 });
 
-export const StudentModel = model<Student>('Student', studentSchema);
+studentSchema.pre('save', async function (next) {
+  // console.log(this, 'Pre hook: we will save the data');
+
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
+  const user = this;
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bcrypt_salt_rounds),
+  );
+  next();
+});
+
+studentSchema.post('save', function (doc, next) {
+  doc.password = '';
+  next();
+});
+
+studentSchema.pre('find', function (next) {
+  this.find({ isDeletd: { $ne: true } });
+  next();
+});
+studentSchema.pre('findOne', function (next) {
+  this.find({ isDeletd: { $ne: true } });
+  next();
+});
+
+studentSchema.methods.isUserExists = async function (id: string) {
+  const existingUser = await Student.findOne({ id });
+  return existingUser;
+};
+
+export const Student = model<TStudent, StudentModel>('Student', studentSchema);
