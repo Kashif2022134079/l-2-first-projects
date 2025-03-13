@@ -6,9 +6,7 @@ import {
   StudentMethods,
   StudentModel,
   TUserName,
-} from './student/student.interface';
-import bcrypt from 'bcrypt';
-import config from '../config';
+} from './student.interface';
 
 const userNameSchema = new Schema<TUserName>({
   firstName: {
@@ -85,9 +83,11 @@ const localGaurdianSchema = new Schema<TLocalGaurdian>({
 
 const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
   id: { type: String, required: true, unique: true },
-  password: {
-    type: String,
-    required: [true, 'Password is needed'],
+  user: {
+    type: Schema.Types.ObjectId,
+    required: [true, 'User id is nedded'],
+    unique: true,
+    ref: 'User',
   },
   name: {
     type: userNameSchema,
@@ -101,7 +101,7 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     },
     required: [true, 'Gender is required'],
   },
-  dateOfBirth: { type: String },
+  dateOfBirth: { type: Date },
   email: {
     type: String,
     required: [true, 'Email is required'],
@@ -137,32 +137,10 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     required: [true, 'Local guardian is required'],
   },
   profileImg: { type: String },
-  isActive: {
-    type: String,
-    enum: ['active', 'blocked'],
-    default: 'active',
-  },
   isDeleted: {
     type: Boolean,
     default: 'false',
   },
-});
-
-studentSchema.pre('save', async function (next) {
-  // console.log(this, 'Pre hook: we will save the data');
-
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user = this;
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_rounds),
-  );
-  next();
-});
-
-studentSchema.post('save', function (doc, next) {
-  doc.password = '';
-  next();
 });
 
 studentSchema.pre('find', function (next) {

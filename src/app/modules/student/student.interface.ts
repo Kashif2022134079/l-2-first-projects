@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 
 export type TUserName = {
   firstName: string;
@@ -23,10 +23,11 @@ export type TLocalGaurdian = {
 
 export type TStudent = {
   id: string;
+  user: Types.ObjectId;
   password: string;
   name: TUserName;
   gender: 'male' | 'female';
-  dateOfBirth?: string;
+  dateOfBirth?: Date;
   email: string;
   contactNo: string;
   emergencyContactNo: string;
@@ -36,7 +37,6 @@ export type TStudent = {
   guardian: TGuardian;
   localGaurdian: TLocalGaurdian;
   profileImg?: string;
-  isActive: 'active' | 'blocked';
   isDeleted?: boolean;
 };
 
