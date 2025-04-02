@@ -16,7 +16,7 @@ const findLastStudentId = async () => {
     })
     .lean();
 
-  return lastStudent?.id ? lastStudent.id.substring(6) : undefined;
+  return lastStudent?.id ? lastStudent.id : undefined;
 };
 //generated student id
 export const generateStudentId = async (payLoad: TAcademicSemester) => {
@@ -24,9 +24,11 @@ export const generateStudentId = async (payLoad: TAcademicSemester) => {
 
   const lastStudentId = await findLastStudentId();
   const lastStudentSemesterCode = lastStudentId?.substring(4, 6);
+
   const lastStudentYear = lastStudentId?.substring(0, 4);
   const currentSemesterCode = payLoad.code;
   const currentYear = payLoad.year;
+  // console.log(currentYear);
 
   if (
     lastStudentId &&
