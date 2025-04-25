@@ -1,19 +1,41 @@
+import QueryBuilder from '../../builder/QueryBuilder';
 import { TStudent } from './student.interface';
 import { Student } from './student.model';
+import { studentSearchableFields } from './students.constanat';
 
-const getAllStudentsFromDB = async () => {
-  const result = await Student.find()
-    .populate('admissionSemester')
-    .populate({
-      path: 'academicDepartment',
-      populate: {
-        path: 'academicFaculty',
-      },
-    });
+const getAllStudentsFromDB = async (query: Record<string, unknown>) => {
+  // const result = await Student.find()
+  //   .populate('admissionSemester')
+  //   .populate({
+  //     path: 'academicDepartment',
+  //     populate: {
+  //       path: 'academicFaculty',
+  //     },
+  //   });
+  // return result;
+
+  const studentQuery = new QueryBuilder(
+    Student.find()
+      .populate('admissionSemester')
+      .populate({
+        path: 'academicDepartment',
+        populate: {
+          path: 'academicFaculty',
+        },
+      }),
+    query,
+  )
+    .search(studentSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+
+  const result = await studentQuery.modelQuery;
   return result;
 };
 const getSingleStudentFromDB = async (id: string) => {
-  const result = await Student.findOne({ id })
+  const result = await Student.findById(id)
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',

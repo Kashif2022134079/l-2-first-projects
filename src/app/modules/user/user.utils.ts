@@ -20,6 +20,11 @@ const findLastStudentId = async () => {
 };
 //generated student id
 export const generateStudentId = async (payLoad: TAcademicSemester) => {
+  // const id = req.params;
+  // const existingFaculty = await Faculty.findOne({ id });
+  // if (existingFaculty) {
+  //   throw new Error(`Faculty with ID ${id} already exists`);
+  // }
   let currentID = (0).toString();
 
   const lastStudentId = await findLastStudentId();
@@ -41,4 +46,37 @@ export const generateStudentId = async (payLoad: TAcademicSemester) => {
 
   incrementId = `${payLoad.year}${payLoad.code}${incrementId}`;
   return incrementId;
+};
+const findLastFaculty = async () => {
+  const lastFaculty = await User.findOne(
+    {
+      role: 'faculty',
+    },
+    {
+      id: 1,
+      _id: 0,
+    },
+  )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
+
+  return lastFaculty?.id ? lastFaculty.id : undefined;
+};
+
+export const generateFacultyId = async (): Promise<string> => {
+  const lastFacultyId = await findLastFaculty();
+
+  let currentIdNum = 0;
+
+  if (lastFacultyId) {
+    const parts = lastFacultyId.split('-'); // 'F-0023' → ['F', '0023']
+    currentIdNum = parseInt(parts[1]) || 0;
+  }
+
+  const newIdNum = currentIdNum + 1;
+  const newFacultyId = `F-${newIdNum.toString().padStart(4, '0')}`;
+
+  return newFacultyId;
 };

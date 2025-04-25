@@ -4,7 +4,8 @@ import catchAsync from '../../utils/catchAsync';
 import status from 'http-status';
 
 const getAllStudents = catchAsync(async (req, res) => {
-  const result = await StudentServices.getAllStudentsFromDB();
+  // console.log(req.query);
+  const result = await StudentServices.getAllStudentsFromDB(req.query);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -33,7 +34,7 @@ const updateStudent = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'Student is deleted successfully',
+    message: 'Student is Updated successfully',
     data: result,
   });
 });

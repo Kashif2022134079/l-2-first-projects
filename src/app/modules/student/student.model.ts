@@ -5,29 +5,8 @@ import {
   TStudent,
   StudentMethods,
   StudentModel,
-  TUserName,
 } from './student.interface';
-
-const userNameSchema = new Schema<TUserName>({
-  firstName: {
-    type: String,
-    trim: true,
-    required: [true, 'First Name is required'],
-    validate: function (value: string) {
-      const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1);
-      return firstNameStr === value;
-    },
-  },
-  middleName: {
-    type: String,
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    trim: true,
-    required: [true, 'Last name is required'],
-  },
-});
+import { userNameSchema } from '../../interface/userName.schema';
 
 const guardianSchema = new Schema<TGuardian>({
   fatherName: {
