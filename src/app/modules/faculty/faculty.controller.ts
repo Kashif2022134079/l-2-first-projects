@@ -9,7 +9,7 @@ const getAllFaculties = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'Academic Semester is retrived successfully',
+    message: 'Faculty is retrived successfully',
     data: result,
   });
 });
@@ -21,7 +21,7 @@ const getSingleFaculty = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'Academic Semester is retrived successfully',
+    message: 'Faculty is retrived successfully',
     data: result,
   });
 });

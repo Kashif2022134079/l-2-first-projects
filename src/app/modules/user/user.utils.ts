@@ -80,3 +80,36 @@ export const generateFacultyId = async (): Promise<string> => {
 
   return newFacultyId;
 };
+const findLastAdmin = async () => {
+  const lastAdmin = await User.findOne(
+    {
+      role: 'admin',
+    },
+    {
+      id: 1,
+      _id: 0,
+    },
+  )
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
+
+  return lastAdmin?.id ? lastAdmin.id : undefined;
+};
+
+export const generateAdminId = async (): Promise<string> => {
+  const lastAdminId = await findLastAdmin();
+
+  let currentIdNum = 0;
+
+  if (lastAdminId) {
+    const parts = lastAdminId.split('-'); // 'A-0023' → ['A', '0023']
+    currentIdNum = parseInt(parts[1]) || 0;
+  }
+
+  const newIdNum = currentIdNum + 1;
+  const newAdminId = `A-${newIdNum.toString().padStart(4, '0')}`;
+
+  return newAdminId;
+};

@@ -7,9 +7,14 @@ import { TStudent } from '../student/student.interface';
 import { Student } from '../student/student.model';
 import { TUser } from './user.interface';
 import { User } from './user.model';
-import { generateFacultyId, generateStudentId } from './user.utils';
+import {
+  generateAdminId,
+  generateFacultyId,
+  generateStudentId,
+} from './user.utils';
 import AppError from '../../errors/AppError';
 import status from 'http-status';
+import { Admin } from '../admin/admin.model';
 
 const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
   // create a user object
@@ -95,8 +100,44 @@ const createFacultyIntoDB = async (password: string, payLoad: TFaculty) => {
     await session.endSession();
   }
 };
+const createAdminIntoDB = async (password: string, payLoad: TFaculty) => {
+  const userData: Partial<TUser> = {};
+  userData.password = password || (config.default_pass as string);
+
+  userData.role = 'admin';
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    //  set manually generated id
+    userData.id = await generateAdminId();
+
+    const newUser = await User.create([userData], { session });
+
+    if (!newUser.length) {
+      throw new AppError(status.BAD_REQUEST, 'Fail to create User');
+    }
+    // set _id, id
+    payLoad.id = newUser[0].id;
+    payLoad.user = newUser[0]._id;
+
+    const newAdmin = await Admin.create([payLoad], { session });
+    if (!newAdmin.length) {
+      throw new AppError(status.BAD_REQUEST, 'Fail to create Faculty');
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+    return newAdmin;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
+    await session.abortTransaction();
+    await session.endSession();
+  }
+};
 
 export const UserServices = {
   createStudentIntoDB,
   createFacultyIntoDB,
+  createAdminIntoDB,
 };
