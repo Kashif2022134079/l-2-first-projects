@@ -13,5 +13,10 @@ router.post(
 
 router.get('/', OfferedCourseController.getAllOfferedCourses);
 router.get('/:id', OfferedCourseController.getSingleOfferedCourse);
+router.patch(
+  '/:id',
+  validateRequest(OfferedCourseValidations.updateOfferedCourseValidationSchema),
+  OfferedCourseController.updateOfferedCourse,
+);
 
 export const OfferedCourseRoutes = router;
