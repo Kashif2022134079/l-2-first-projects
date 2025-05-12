@@ -14,7 +14,11 @@ const createOfferedCourseIntoDB = async (payload: TOfferedCourse) => {
     academicFaculty,
     academicDepartment,
     faculty,
+    section,
     course,
+    days,
+    startTime,
+    endTime,
   } = payload;
 
   const isSemesterRegistrationExists =
@@ -24,14 +28,14 @@ const createOfferedCourseIntoDB = async (payload: TOfferedCourse) => {
   }
 
   const academicSemester = isSemesterRegistrationExists.academicSemester;
-  const isacademicFacultyexists =
+  const isAcademicFacultyexists =
     await AcademicFaculty.findById(academicFaculty);
-  if (!isacademicFacultyexists) {
+  if (!isAcademicFacultyexists) {
     throw new AppError(status.NOT_FOUND, 'Academic Faculty is not found');
   }
-  const isacademicDepartmentExists =
+  const isAcademicDepartmentExists =
     await AcademicDepartment.findById(academicDepartment);
-  if (!isacademicDepartmentExists) {
+  if (!isAcademicDepartmentExists) {
     throw new AppError(status.NOT_FOUND, 'Academic Department is not found');
   }
   const isFacultyExists = await Faculty.findById(faculty);
@@ -42,6 +46,60 @@ const createOfferedCourseIntoDB = async (payload: TOfferedCourse) => {
   if (!isCourseExists) {
     throw new AppError(status.NOT_FOUND, 'Course is not found');
   }
+
+  // check if department belong to Faculty
+  const isDepartmentBelongToFaculty = await AcademicDepartment.findOne({
+    _id: academicDepartment,
+    academicFaculty,
+  });
+  if (!isDepartmentBelongToFaculty) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      ` This ${isAcademicDepartmentExists.name} id not belong to this ${isAcademicFacultyexists.name}`,
+    );
+  }
+
+  // chcek if the same offered course is registred for same section
+
+  const sameOfferedSemesterWithSameSection = await OfferedCourse.findOne({
+    semesterRegistration,
+    course,
+    section,
+  });
+
+  if (sameOfferedSemesterWithSameSection) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Offered Course with same section is alredy exists`,
+    );
+  }
+
+  // get the schedule for faculty
+  const assignedSchedule = await OfferedCourse.find({
+    semesterRegistration,
+    faculty,
+    days: { $in: days },
+  }).select('days startTime endTime');
+
+  const newSchedule = {
+    days,
+    startTime,
+    endTime,
+  };
+  assignedSchedule.forEach((schedule) => {
+    const existingStartTime = new Date(`1970-01-01T${schedule.startTime}`);
+    const existingEndTime = new Date(`1970-01-01T${schedule.endTime}`);
+    const newStartTime = new Date(`1970-01-01T${newSchedule.startTime}`);
+    const newEndTime = new Date(`1970-01-01T${newSchedule.endTime}`);
+
+    if (newStartTime < existingEndTime && newEndTime > existingStartTime) {
+      throw new AppError(
+        status.CONFLICT,
+        `This faculty is not available at that time! choose other time or day`,
+      );
+    }
+  });
+
   const result = await OfferedCourse.create({ ...payload, academicSemester });
   return result;
 };
