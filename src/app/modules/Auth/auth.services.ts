@@ -5,6 +5,7 @@ import { TLoginUser } from './auth.interface';
 import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../../config';
+// import { createToken } from './auth.utils';
 
 const loginUser = async (payLoad: TLoginUser) => {
   // check if the user exists
@@ -39,11 +40,30 @@ const loginUser = async (payLoad: TLoginUser) => {
     role: user.role,
   };
   const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret as string, {
-    expiresIn: '10d',
+    expiresIn: '1d',
   });
+  // const accessToken = createToken(
+  //   jwtPayload,
+  //   config.jwt_access_secret as string,
+  //   config.jwt_access_expires_in as string,
+  // );
+  const refreshToken = jwt.sign(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    {
+      expiresIn: '365d',
+    },
+  );
+  // refresh token
+  // const refreshToken = createToken(
+  //   jwtPayload,
+  //   config.jwt_refresh_secret as string,
+  //   config.jwt_refresh_expires_in as string,
+  // );
 
   return {
     accessToken,
+    refreshToken,
     needPasswordChange: user?.needsPasswordChange,
   };
 };
@@ -52,7 +72,7 @@ const changePassword = async (
   userData: JwtPayload,
   payLoad: { oldPassword: string; newPassword: string },
 ) => {
-  console.log(userData);
+  // console.log(userData);
   const user = await User.findOne({ id: userData.userId }).select('+password');
   if (!user) {
     throw new AppError(status.NOT_FOUND, 'User Not Found');
@@ -73,7 +93,7 @@ const changePassword = async (
     payLoad?.oldPassword,
     user?.password,
   );
-  console.log(isPasswordMatch);
+  // console.log(isPasswordMatch);
   if (isPasswordMatch === false) {
     throw new AppError(status.FORBIDDEN, 'Password is not matched');
   }
@@ -98,7 +118,62 @@ const changePassword = async (
 
   return null;
 };
+
+const refreshToken = async (token: string) => {
+  // chcek is the given token is valid
+  const decoded = jwt.verify(
+    token,
+    config.jwt_access_secret as string,
+  ) as JwtPayload;
+
+  const { userId, iat } = decoded;
+
+  // check if the user exists
+  const user = await User.findOne({ id: userId }).select('+password');
+  // console.log(user);
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, 'User Not Found');
+  }
+  const isDeleted = user?.isDeleted;
+
+  if (isDeleted) {
+    throw new AppError(status.FORBIDDEN, 'User is already deleted');
+  }
+  const userStatus = user?.status;
+
+  if (userStatus === 'blocked') {
+    throw new AppError(status.FORBIDDEN, 'User is blocked');
+  }
+
+  const ifJWTissuedBeforePasswordChange = (
+    passwordChangeTimestamps: Date,
+    jwtIssuedTimestamps: number,
+  ) => {
+    const passwordChangeTime =
+      new Date(passwordChangeTimestamps).getTime() / 1000;
+    return passwordChangeTime > jwtIssuedTimestamps;
+  };
+  if (
+    user?.passwordChangeAt &&
+    ifJWTissuedBeforePasswordChange(user.passwordChangeAt, iat as number)
+  ) {
+    throw new AppError(status.UNAUTHORIZED, 'You are not authorized');
+  }
+
+  const jwtPayload = {
+    userId: user.id,
+    role: user.role,
+  };
+  const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret as string, {
+    expiresIn: '1d',
+  });
+
+  return {
+    accessToken,
+  };
+};
 export const AuthServices = {
   loginUser,
   changePassword,
+  refreshToken,
 };
