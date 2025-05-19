@@ -25,6 +25,7 @@ const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
 
   // set student role
   userData.role = 'student';
+  userData.email = payLoad.email;
 
   const admissionSemesterId = await AcademicSemester.findById(
     payLoad.admissionSemester,
@@ -70,6 +71,7 @@ const createFacultyIntoDB = async (password: string, payLoad: TFaculty) => {
   userData.password = password || (config.default_pass as string);
 
   userData.role = 'faculty';
+  userData.email = payLoad.email;
 
   const session = await mongoose.startSession();
   try {
@@ -105,6 +107,7 @@ const createAdminIntoDB = async (password: string, payLoad: TFaculty) => {
   userData.password = password || (config.default_pass as string);
 
   userData.role = 'admin';
+  userData.email = payLoad.email;
 
   const session = await mongoose.startSession();
   try {
@@ -136,8 +139,34 @@ const createAdminIntoDB = async (password: string, payLoad: TFaculty) => {
   }
 };
 
+const getMe = async (userId: string, role: string) => {
+  // const decoded = verifyToken(token, config.jwt_access_secret as string);
+  // const { userId, role } = decoded;
+
+  let result = null;
+  if (role === 'student') {
+    result = await Student.findOne({ id: userId }).populate('user');
+  }
+  if (role === 'admin') {
+    result = await Admin.findOne({ id: userId }).populate('user');
+  }
+  if (role === 'faculty') {
+    result = await Faculty.findOne({ id: userId }).populate('user');
+  }
+  return result;
+};
+
+const changeStatus = async (id: string, payLoad: { status: string }) => {
+  const result = await User.findByIdAndUpdate(id, payLoad, {
+    new: true,
+  });
+  return result;
+};
+
 export const UserServices = {
   createStudentIntoDB,
   createFacultyIntoDB,
   createAdminIntoDB,
+  getMe,
+  changeStatus,
 };

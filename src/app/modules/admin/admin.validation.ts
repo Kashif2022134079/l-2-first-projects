@@ -40,9 +40,9 @@ export const createAdminValidationSchema = z.object({
         .string()
         .min(1, { message: 'Permanent address is required' }),
       profileImg: z.string().url().optional(),
-      academicDepartment: z
-        .string()
-        .min(1, { message: 'Academic Department is required' }),
+      // academicDepartment: z
+      //   .string()
+      //   .min(1, { message: 'Academic Department is required' }),
       isDeleted: z.boolean().optional(),
     }),
   }),
@@ -73,9 +73,9 @@ export const updateAdminValidationSchema = z.object({
           .string()
           .min(1, { message: 'Permanent address is required' }),
         profileImg: z.string().url().optional(),
-        academicDepartment: z
-          .string()
-          .min(1, { message: 'Academic Department is required' }),
+        // academicDepartment: z
+        //   .string()
+        //   .min(1, { message: 'Academic Department is required' }),
         isDeleted: z.boolean().optional(),
       })
       .partial(), // All fields inside faculty are now optional

@@ -51,10 +51,10 @@ const adminSchema = new Schema<TAdmin>({
     required: [true, 'Permanent adress is required'],
   },
   profileImg: { type: String },
-  academicDepartment: {
-    type: Schema.Types.ObjectId,
-    ref: 'AcademicDepartment',
-  },
+  // academicDepartment: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'AcademicDepartment',
+  // },
   isDeleted: {
     type: Boolean,
     default: 'false',
