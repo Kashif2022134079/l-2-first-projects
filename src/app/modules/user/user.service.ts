@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from 'mongoose';
 import config from '../../config';
 import { AcademicSemester } from '../academicSemester/academicSemeter.model';
@@ -15,8 +16,13 @@ import {
 import AppError from '../../errors/AppError';
 import status from 'http-status';
 import { Admin } from '../admin/admin.model';
+import { sendImageToClaudinary } from '../../utils/sendImageToClaudonary';
 
-const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
+const createStudentIntoDB = async (
+  file: any,
+  password: string,
+  payLoad: TStudent,
+) => {
   // create a user object
   const userData: Partial<TUser> = {};
 
@@ -38,6 +44,10 @@ const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
     // set manually id
     userData.id = await generateStudentId(admissionSemesterId);
 
+    const imageName = `${userData.id}${payLoad?.name?.firstName}`;
+    const path = file?.path;
+    const { secure_url } = await sendImageToClaudinary(imageName, path);
+
     // create a user(t-1)
     const newUser = await User.create([userData], { session });
 
@@ -48,6 +58,7 @@ const createStudentIntoDB = async (password: string, payLoad: TStudent) => {
     // set _id, id
     payLoad.id = newUser[0].id;
     payLoad.user = newUser[0]._id;
+    payLoad.profileImg = secure_url;
 
     // create Student (T-2)
     const newStudent = await Student.create([payLoad], { session });

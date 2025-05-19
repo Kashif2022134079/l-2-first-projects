@@ -12,4 +12,7 @@ export default {
   jwt_access_secret: process.env.JWT_ACCESS_SECRET,
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET,
   reset_password_ui_link: process.env.RESET_PASSWORD_UI_LINK,
+  image_api_secret: process.env.IMAGE_API_SECRET,
+  image_api_keys: process.env.IMAGE_API_KEYS,
+  image_cloud_name: process.env.IMAGE_CLOUD_NAME,
 };
