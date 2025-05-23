@@ -46,6 +46,7 @@ const createStudentIntoDB = async (
 
     const imageName = `${userData.id}${payLoad?.name?.firstName}`;
     const path = file?.path;
+    // send image to claudinary
     const { secure_url } = await sendImageToClaudinary(imageName, path);
 
     // create a user(t-1)

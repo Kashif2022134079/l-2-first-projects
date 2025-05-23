@@ -38,7 +38,7 @@ const createAdmin = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: 'Admion is created successfully',
+    message: 'Admin is created successfully',
     data: result,
   });
 });
