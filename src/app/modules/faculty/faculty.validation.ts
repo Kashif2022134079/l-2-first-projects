@@ -40,7 +40,7 @@ export const createfacultyValidationSchema = z.object({
       permanentAddress: z
         .string()
         .min(1, { message: 'Permanent address is required' }),
-      profileImg: z.string().url().optional(),
+      // profileImg: z.string().url().optional(),
       academicDepartment: z
         .string()
         .min(1, { message: 'Academic Department is required' }),

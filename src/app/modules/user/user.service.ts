@@ -71,14 +71,18 @@ const createStudentIntoDB = async (
     await session.endSession();
 
     return newStudent;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
+  } catch (err: any) {
     await session.abortTransaction();
     await session.endSession();
+    throw new Error(err);
   }
 };
 
-const createFacultyIntoDB = async (password: string, payLoad: TFaculty) => {
+const createFacultyIntoDB = async (
+  file: any,
+  password: string,
+  payLoad: TFaculty,
+) => {
   const userData: Partial<TUser> = {};
   userData.password = password || (config.default_pass as string);
 
@@ -90,6 +94,10 @@ const createFacultyIntoDB = async (password: string, payLoad: TFaculty) => {
     session.startTransaction();
     //  set manually generated id
     userData.id = await generateFacultyId();
+    const imageName = `${userData.id}${payLoad?.name?.firstName}`;
+    const path = file?.path;
+    // send image to claudinary
+    const { secure_url } = await sendImageToClaudinary(imageName, path);
 
     const newUser = await User.create([userData], { session });
 
@@ -99,6 +107,7 @@ const createFacultyIntoDB = async (password: string, payLoad: TFaculty) => {
     // set _id, id
     payLoad.id = newUser[0].id;
     payLoad.user = newUser[0]._id;
+    payLoad.profileImg = secure_url;
 
     const newFaculty = await Faculty.create([payLoad], { session });
     if (!newFaculty.length) {

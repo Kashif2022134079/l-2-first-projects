@@ -23,6 +23,11 @@ router.post(
 );
 router.post(
   '/create-faculty',
+  upload.single('file'),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   auth(USER_ROLE.admin),
   validateRequest(facultyValidations.createfacultyValidationSchema),
   UserController.createFaculty,
