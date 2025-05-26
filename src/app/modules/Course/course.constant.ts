@@ -1,1 +1,1 @@
-export const CourseSearchAbleArray = ['title', 'prefix', 'code'];
+export const CourseSearchAbleArray = ['title', 'prefix'];
